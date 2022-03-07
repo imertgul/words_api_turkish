@@ -5,7 +5,6 @@ import 'dart:math';
 
 import 'words.dart';
 
-
 Future main() async {
   late final HttpServer server;
   try {
@@ -24,21 +23,36 @@ Future main() async {
       '*',
       preserveHeaderCase: true,
     );
-
-    try {
-      final word = words[Random().nextInt(words.length)];
-      req.response.write(
-        jsonEncode(
-          {
-            'word': word.toLowerCase(),
-            'length' : word.length,
-            'starts_with': word.substring(0, 1),
-          }
-        ),
-      );
-    } catch (e) {
-      print('Something went wrong: $e');
-      req.response.statusCode = HttpStatus.internalServerError;
+    print(req.method + ' ' + req.requestedUri.toString());
+    if (req.method == 'GET') {
+      try {
+        switch (req.requestedUri.pathSegments.last) {
+          case 'words':
+            req.response.write(
+              jsonEncode({
+                'length': words.length,
+                'language': 'tr',
+                'words': words,
+              }),
+            );
+            break;
+          case 'random':
+            final word = words[Random().nextInt(words.length)];
+            req.response.write(
+              jsonEncode({
+                'word': word.toLowerCase(),
+                'length': word.length,
+                'starts_with': word.substring(0, 1),
+              }),
+            );
+            break;
+          default:
+            req.response.statusCode = HttpStatus.badRequest;
+        }
+      } catch (e) {
+        print('Something went wrong: $e');
+        req.response.statusCode = HttpStatus.internalServerError;
+      }
     }
     await req.response.close();
   }
