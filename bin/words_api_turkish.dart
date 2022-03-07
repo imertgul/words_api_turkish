@@ -43,6 +43,7 @@ Future main() async {
                 'word': word.toLowerCase(),
                 'length': word.length,
                 'starts_with': word.substring(0, 1),
+                'letters':word.split(''),
               }),
             );
             break;
